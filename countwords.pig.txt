@@ -1,0 +1,30 @@
+--
+-- countwords.pig
+--    Example Pig program to read the contents of a text
+--    file and count all words.
+--
+
+-- Load data from a file
+input_lines = LOAD '/user/hue/test/mary.txt' AS (line:chararray);
+
+-- Extract words from each line and put them into a pig bag datatype, then flatten the bag to get one word on each row
+words = FOREACH input_lines GENERATE FLATTEN(TOKENIZE(line)) AS word;
+
+-- Filter out any words that are just white spaces
+filtered_words = FILTER words BY word MATCHES '\\w+';
+
+-- create a group for each word
+word_groups = GROUP filtered_words BY word;
+
+-- count the entries in each group
+word_count = FOREACH word_groups GENERATE COUNT(filtered_words) AS count, group AS word;
+
+-- order the records by count
+ordered_word_count = ORDER word_count BY count DESC;
+
+-- Store the results into a file
+STORE ordered_word_count INTO 'word_count_result';
+
+-- Display the results 
+-- (This line is optional)
+DUMP ordered_word_count;

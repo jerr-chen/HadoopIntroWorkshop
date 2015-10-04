@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS lines;
+
+CREATE TABLE lines(line STRING);
+
+LOAD DATA INPATH '/user/hue/test/book.txt' OVERWRITE INTO TABLE lines;
+
+  SELECT count(*), word
+    FROM lines
+ LATERAL VIEW explode(split(line,' ')) lTable AS word
+GROUP BY word;
